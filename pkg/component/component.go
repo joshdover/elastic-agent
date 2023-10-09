@@ -25,7 +25,7 @@ import (
 )
 
 // GenerateMonitoringCfgFn is a function that can inject information into the model generation process.
-type GenerateMonitoringCfgFn func(map[string]interface{}, []Component, map[string]string) (map[string]interface{}, error)
+type GenerateMonitoringCfgFn func(map[string]interface{}, []Component) (map[string]interface{}, error)
 
 type HeadersProvider interface {
 	Headers() map[string]string
@@ -262,13 +262,13 @@ func (r *RuntimeSpecs) ToComponents(
 	if monitoringInjector != nil {
 		// The monitoring config depends on a map from component id to
 		// binary name
-		binaryMapping := make(map[string]string)
-		for _, component := range components {
-			if spec := component.InputSpec; spec != nil {
-				binaryMapping[component.ID] = spec.BinaryName
-			}
-		}
-		monitoringCfg, err := monitoringInjector(policy, components, binaryMapping)
+		// binaryMapping := make(map[string]string)
+		// for _, component := range components {
+		// 	if spec := component.InputSpec; spec != nil {
+		// 		binaryMapping[component.ID] = spec.BinaryName
+		// 	}
+		// }
+		monitoringCfg, err := monitoringInjector(policy, components)
 		if err != nil {
 			return nil, fmt.Errorf("failed to inject monitoring: %w", err)
 		}

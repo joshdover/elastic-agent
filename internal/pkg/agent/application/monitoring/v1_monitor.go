@@ -105,7 +105,6 @@ func (b *BeatsMonitor) Reload(rawConfig *config.Config) error {
 func (b *BeatsMonitor) MonitoringConfig(
 	policy map[string]interface{},
 	components []component.Component,
-	componentIDToBinary map[string]string,
 ) (map[string]interface{}, error) {
 	if !b.Enabled() {
 		return nil, nil
@@ -150,7 +149,7 @@ func (b *BeatsMonitor) MonitoringConfig(
 	}
 
 	if b.config.C.MonitorMetrics {
-		if err := b.injectMetricsInput(cfg, componentIDToBinary, monitoringOutput, components); err != nil {
+		if err := b.injectMetricsInput(cfg, monitoringOutput, components); err != nil {
 			return nil, errors.New(err, "failed to inject monitoring output")
 		}
 	}
@@ -516,10 +515,17 @@ func (b *BeatsMonitor) monitoringNamespace() string {
 	return defaultMonitoringNamespace
 }
 
-func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, componentIDToBinary map[string]string, monitoringOutputName string, componentList []component.Component) error {
+func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, monitoringOutputName string, componentList []component.Component) error {
+	componentsWithInputs := make(map[string]component.Component)
+	for _, component := range componentList {
+		if spec := component.InputSpec; spec != nil {
+			componentsWithInputs[component.ID] = component
+		}
+	}
+
 	monitoringNamespace := b.monitoringNamespace()
 	fixedAgentName := strings.ReplaceAll(agentName, "-", "_")
-	beatsStreams := make([]interface{}, 0, len(componentIDToBinary))
+	beatsStreams := make([]interface{}, 0, len(componentsWithInputs))
 	streams := []interface{}{
 		map[string]interface{}{
 			idKey: "metrics-monitoring-agent",
@@ -590,7 +596,8 @@ func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, componentI
 			},
 		},
 	}
-	for unit, binaryName := range componentIDToBinary {
+	for unit, component := range componentsWithInputs {
+		binaryName := component.InputSpec.BinaryName
 		if !isSupportedMetricsBinary(binaryName) {
 			continue
 		}

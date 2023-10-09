@@ -172,15 +172,7 @@ func inspectConfig(ctx context.Context, cfgPath string, opts inspectConfigOpts, 
 			return fmt.Errorf("failed to get binary mappings: %w", err)
 		}
 
-		// The monitoring config depends on a map from component id to
-		// binary name.
-		binaryMapping := make(map[string]string)
-		for _, component := range components {
-			if spec := component.InputSpec; spec != nil {
-				binaryMapping[component.ID] = spec.BinaryName
-			}
-		}
-		monitorCfg, err := monitorFn(cfg, components, binaryMapping)
+		monitorCfg, err := monitorFn(cfg, components)
 		if err != nil {
 			return fmt.Errorf("failed to get monitoring config: %w", err)
 		}
