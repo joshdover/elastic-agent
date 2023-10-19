@@ -517,9 +517,12 @@ func (b *BeatsMonitor) monitoringNamespace() string {
 
 func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, monitoringOutputName string, componentList []component.Component) error {
 	componentsWithInputs := make(map[string]component.Component)
+	shipperComponents := make(map[string]component.Component)
 	for _, component := range componentList {
 		if spec := component.InputSpec; spec != nil {
 			componentsWithInputs[component.ID] = component
+		} else if spec := component.ShipperSpec; spec != nil {
+			shipperComponents[component.ID] = component
 		}
 	}
 
@@ -596,13 +599,13 @@ func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, monitoring
 			},
 		},
 	}
-	for unit, component := range componentsWithInputs {
+	for componentId, component := range componentsWithInputs {
 		binaryName := component.InputSpec.BinaryName
 		if !isSupportedMetricsBinary(binaryName) {
 			continue
 		}
 
-		endpoints := []interface{}{prefixedEndpoint(utils.SocketURLWithFallback(unit, paths.TempDir()))}
+		endpoints := []interface{}{prefixedEndpoint(utils.SocketURLWithFallback(componentId, paths.TempDir()))}
 		name := strings.ReplaceAll(strings.ReplaceAll(binaryName, "-", "_"), "/", "_") // conform with index naming policy
 
 		if isSupportedBeatsBinary(binaryName) {
@@ -652,6 +655,16 @@ func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, monitoring
 							"target": "agent",
 							"fields": map[string]interface{}{
 								"id": b.agentInfo.AgentID(),
+							},
+						},
+					},
+					map[string]interface{}{
+						"add_fields": map[string]interface{}{
+							"target": "component",
+							"fields": map[string]interface{}{
+								"id":      componentId,
+								"type":    component.InputSpec.InputType,
+								"binary":  component.InputSpec.BinaryName,
 							},
 						},
 					},
@@ -713,6 +726,16 @@ func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, monitoring
 							"http",
 						},
 						"ignore_missing": true,
+					},
+				},
+				map[string]interface{}{
+					"add_fields": map[string]interface{}{
+						"target": "component",
+						"fields": map[string]interface{}{
+							"id":      componentId,
+							"type":    component.InputSpec.InputType,
+							"binary":  component.InputSpec.BinaryName,
+						},
 					},
 				},
 			},
@@ -777,12 +800,23 @@ func (b *BeatsMonitor) injectMetricsInput(cfg map[string]interface{}, monitoring
 							"ignore_missing": true,
 						},
 					},
+					map[string]interface{}{
+						"add_fields": map[string]interface{}{
+							"target": "component",
+							"fields": map[string]interface{}{
+								"id":      componentId,
+								"type":    component.InputSpec.InputType,
+								"binary":  component.InputSpec.BinaryName,
+							},
+						},
+					},
 				},
 			})
 		}
 
 	}
 
+	// TOOD: add component.* fields to the shipper metrics
 	shipperHTTPStreams := []interface{}{}
 	// the shipper is listed in componentList, but not componentIDToBinary
 	// iterate over the full component list, adding a monitoring output for every shipper binary.
