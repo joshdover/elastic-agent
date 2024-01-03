@@ -1,0 +1,40 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+
+processors:
+  resource:
+    attributes:
+      - key: service.name
+        value: otel-shipper
+        action: upsert
+
+exporters:
+  debug:
+    # verbosity: detailed
+  # otlp:
+  #   endpoint:
+  file:
+    path: /tmp/otel-output.ndjson
+
+service:
+  pipelines:
+    logs:
+      receivers:
+        - otlp
+      processors:
+        - resource
+      exporters:
+        - debug
+        # - file
+        # - otlp
+    metrics:
+      receivers:
+        - otlp
+      processors:
+        - resource
+      exporters:
+        - debug
+        # - file
+        # - otlp

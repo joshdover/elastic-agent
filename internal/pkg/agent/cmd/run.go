@@ -74,7 +74,8 @@ func newRunCommandWithArgs(_ []string, streams *cli.IOStreams) *cobra.Command {
 			}
 			fleetInitTimeout, _ := cmd.Flags().GetDuration("fleet-init-timeout")
 			testingMode, _ := cmd.Flags().GetBool("testing-mode")
-			if err := run(nil, testingMode, fleetInitTimeout); err != nil && !errors.Is(err, context.Canceled) {
+			otelShipper, _ := cmd.Flags().GetBool("otel-shipper")
+			if err := run(nil, testingMode, fleetInitTimeout, otelShipper); err != nil && !errors.Is(err, context.Canceled) {
 				fmt.Fprintf(streams.Err, "Error: %v\n%s\n", err, troubleshootMessage())
 
 				return err
@@ -94,13 +95,15 @@ func newRunCommandWithArgs(_ []string, streams *cli.IOStreams) *cobra.Command {
 	// this way, only the integration testing framework runs the Elastic Agent in this mode
 	cmd.Flags().Bool("testing-mode", false, "Run with testing mode enabled")
 
+	cmd.Flags().Bool("otel-shipper", false, "Run as otel shipper")
+
 	cmd.Flags().Duration("fleet-init-timeout", envTimeout(fleetInitTimeoutName), " Sets the initial timeout when starting up the fleet server under agent")
 	_ = cmd.Flags().MarkHidden("testing-mode")
 
 	return cmd
 }
 
-func run(override cfgOverrider, testingMode bool, fleetInitTimeout time.Duration, modifiers ...component.PlatformModifier) error {
+func run(override cfgOverrider, testingMode bool, fleetInitTimeout time.Duration, otelShipper bool, modifiers ...component.PlatformModifier) error {
 	// Windows: Mark service as stopped.
 	// After this is run, the service is considered by the OS to be stopped.
 	// This must be the first deferred cleanup task (last to execute).
@@ -136,7 +139,14 @@ func run(override cfgOverrider, testingMode bool, fleetInitTimeout time.Duration
 
 	// detect otel
 	if runAsOtel := otel.IsOtelConfig(ctx, paths.ConfigFile()); runAsOtel {
-		return otel.Run(ctx, cancel, stop, testingMode)
+		return otel.Run(ctx, cancel, stop, testingMode, paths.ConfigFile())
+	}
+
+	// start otel as shipper
+	if otelShipper {
+		go func() {
+			otel.Run(ctx, cancel, stop, testingMode, "/Users/jdover/src/elastic-agent/otlp-shipper.yml")
+		}()
 	}
 
 	// not otel continue as usual

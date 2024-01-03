@@ -16,7 +16,6 @@ import (
 	"go.opentelemetry.io/collector/confmap/converter/expandconverter"
 	"go.opentelemetry.io/collector/otelcol"
 
-	"github.com/elastic/elastic-agent/internal/pkg/agent/application/paths"
 	"github.com/elastic/elastic-agent/internal/pkg/release"
 )
 
@@ -43,9 +42,9 @@ func IsOtelConfig(ctx context.Context, pathConfigFile string) bool {
 	return false
 }
 
-func Run(ctx context.Context, cancel context.CancelFunc, stop chan bool, testingMode bool) error {
+func Run(ctx context.Context, cancel context.CancelFunc, stop chan bool, testingMode bool, configPath string) error {
 	fmt.Fprintln(os.Stdout, "Starting in otel mode")
-	settings, err := newSettings(paths.ConfigFile(), release.Version())
+	settings, err := newSettings(configPath, release.Version())
 	if err != nil {
 		return err
 	}
