@@ -6,17 +6,25 @@ receivers:
 processors:
   resource:
     attributes:
-      - key: service.name
-        value: otel-shipper
+      - key: data_stream.namespace
+        value: otel-shipper-test1
         action: upsert
 
 exporters:
   debug:
     # verbosity: detailed
-  # otlp:
-  #   endpoint:
   file:
     path: /tmp/otel-output.ndjson
+  elasticsearch:
+    endpoints:
+    - http://localhost:9200
+    user: elastic
+    password: changeme
+    logs_dynamic_index:
+      enabled: true
+      mode: data_stream
+    mapping:
+      mode: ecs
 
 service:
   pipelines:
@@ -27,14 +35,14 @@ service:
         - resource
       exporters:
         - debug
+        - elasticsearch
         # - file
-        # - otlp
-    metrics:
-      receivers:
-        - otlp
-      processors:
-        - resource
-      exporters:
-        - debug
-        # - file
-        # - otlp
+    # metrics:
+    #   receivers:
+    #     - otlp
+    #   processors:
+    #     - resource
+    #   exporters:
+    #     - debug
+    #     - elasticsearch
+    #     # - file

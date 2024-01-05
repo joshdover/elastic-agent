@@ -46,6 +46,10 @@ shared:
         source: 'otel.yml'
         mode: 0600
         config: true
+      /etc/{{.BeatName}}/otlp-shipper.yml:
+        source: 'otlp-shipper.yml'
+        mode: 0600
+        config: true
       /etc/{{.BeatName}}/.elastic-agent.active.commit:
         content: >
           {{ commit }}
@@ -117,6 +121,10 @@ shared:
         source: 'otel.yml'
         mode: 0600
         config: true
+      /etc/{{.BeatName}}/otlp-shipper.yml:
+        source: 'oltp-shipper.yml'
+        mode: 0600
+        config: true
       /etc/{{.BeatName}}/.elastic-agent.active.commit:
         content: >
           {{ commit }}
@@ -153,6 +161,10 @@ shared:
       config: true
     'otel.yml':
       source: 'otel.yml'
+      mode: 0600
+      config: true
+    'otlp-shipper.yml':
+      source: 'otlp-shipper.yml'
       mode: 0600
       config: true
     '.elastic-agent.active.commit':
@@ -245,6 +257,10 @@ shared:
         config: true
       'otel.yml':
         source: 'otel.yml'
+        mode: 0600
+        config: true
+      'otlp-shipper.yml':
+        source: 'otlp-shipper.yml'
         mode: 0600
         config: true
       '.elastic-agent.active.commit':

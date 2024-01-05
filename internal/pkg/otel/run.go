@@ -43,7 +43,7 @@ func IsOtelConfig(ctx context.Context, pathConfigFile string) bool {
 }
 
 func Run(ctx context.Context, cancel context.CancelFunc, stop chan bool, testingMode bool, configPath string) error {
-	fmt.Fprintln(os.Stdout, "Starting in otel mode")
+	fmt.Fprintln(os.Stdout, "Starting otelcol with config path: ", configPath)
 	settings, err := newSettings(configPath, release.Version())
 	if err != nil {
 		return err

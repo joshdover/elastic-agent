@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"syscall"
 	"time"
@@ -145,7 +146,12 @@ func run(override cfgOverrider, testingMode bool, fleetInitTimeout time.Duration
 	// start otel as shipper
 	if otelShipper {
 		go func() {
-			otel.Run(ctx, cancel, stop, testingMode, "/Users/jdover/src/elastic-agent/otlp-shipper.yml")
+			shipperCfg := path.Join(paths.Top(), "otlp-shipper.yml")
+			err := otel.Run(ctx, cancel, stop, testingMode, shipperCfg)
+			if err != nil {
+				fmt.Printf("otel shipper failed: %v", err)
+				panic(fmt.Sprintf("otel shipper failed: %v", err))
+			}
 		}()
 	}
 
