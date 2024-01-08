@@ -274,7 +274,7 @@ replace (
 	github.com/Shopify/sarama => github.com/elastic/sarama v1.19.1-0.20220310193331-ebc2b0d8eef3
 	github.com/dop251/goja => github.com/andrewkroh/goja v0.0.0-20190128172624-dd2ac4456e20
 	github.com/dop251/goja_nodejs => github.com/dop251/goja_nodejs v0.0.0-20171011081505-adff31b136e6
-	github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticsearchexporter => github.com/joshdover/opentelemetry-collector-contrib/exporter/elasticsearchexporter v0.83.1-0.20240105142050-fa3ccc782913
+	github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticsearchexporter => github.com/joshdover/opentelemetry-collector-contrib/exporter/elasticsearchexporter v0.83.1-0.20240108165945-3fd99fa0399f
 	github.com/tonistiigi/fifo => github.com/containerd/fifo v0.0.0-20190816180239-bda0ff6ed73c
 )
 

@@ -7,7 +7,7 @@ processors:
   resource:
     attributes:
       - key: data_stream.namespace
-        value: otel-shipper-test1
+        value: otel.shipper.test1
         action: upsert
 
 exporters:
@@ -23,8 +23,12 @@ exporters:
     logs_dynamic_index:
       enabled: true
       mode: data_stream
+    metrics_dynamic_index:
+      enabled: true
+      mode: data_stream
     mapping:
       mode: ecs
+      dedot: true
 
 service:
   pipelines:
@@ -37,12 +41,14 @@ service:
         - debug
         - elasticsearch
         # - file
-    # metrics:
-    #   receivers:
-    #     - otlp
-    #   processors:
-    #     - resource
-    #   exporters:
-    #     - debug
-    #     - elasticsearch
-    #     # - file
+        # - otlp
+    metrics:
+      receivers:
+        - otlp
+      processors:
+        - resource
+      exporters:
+        - debug
+        - elasticsearch
+        # - file
+        # - otlp
